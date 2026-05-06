@@ -79,16 +79,6 @@ variants, measures accuracy and speed for each, and saves the results
 to `artifacts/results/quantization_int8.json`. It runs in under 10
 seconds.
 
-To build the report you'll need `main.tex` and `sample.bib` (the
-bibliography file) in the same directory:
-
-```bash
-latexmk -pdf -bibtex- -biber main.tex
-```
-
-Overleaf works too; it picks up biber automatically because the report
-uses biblatex with `style=ieee, sorting=none`.
-
 ## What you should see
 
 The exact numbers from my run, copied from `artifacts/results/summary.txt`:
