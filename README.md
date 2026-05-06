@@ -90,7 +90,7 @@ The exact numbers from my run, copied from `artifacts/results/summary.txt`:
 - Graph node counts: ONNX = 14, Relay calls after import = 17, compiled
   TVM graph = 20.
 
-Your absolute timings will differ depending on CPU, BLAS, and so on, but
+Your absolute timings will differ depending on CPU, but
 the qualitative picture (TVM matches the predictions, isn't smaller, and
 isn't faster on a generic CPU without tuning) should hold.
 
