@@ -1,0 +1,69 @@
+{
+  "comparison": "onnx_runtime_vs_tvm",
+  "onnx_model_path": "artifacts/onnx/lenet_mnist.onnx",
+  "target": "llvm",
+  "opt_level": 3,
+  "batch_size_eval": 1,
+  "model_summary": {
+    "onnx_file_bytes": 20869,
+    "onnx_num_graph_nodes": 14,
+    "onnx_num_initializers": 11,
+    "onnx_num_parameters": 61707,
+    "onnx_op_type_counts": {
+      "AveragePool": 2,
+      "Concat": 1,
+      "Conv": 2,
+      "Gemm": 3,
+      "Relu": 4,
+      "Reshape": 1,
+      "Shape": 1
+    },
+    "tvm_compile_time_s": 1.6929521840065718,
+    "relay_call_count": 17,
+    "relay_text_num_lines": 25,
+    "tvm_graph_num_nodes": 20,
+    "tvm_graph_num_arg_nodes": 11,
+    "tvm_graph_num_heads": 1,
+    "tvm_artifact_sizes": {
+      "library_bytes": 250603,
+      "graph_json_bytes": 7712,
+      "params_bytes": 247652,
+      "relay_text_bytes": 3069,
+      "total_bytes": 509036
+    }
+  },
+  "num_samples": 10000,
+  "onnx_accuracy": 0.9852,
+  "tvm_accuracy": 0.9852,
+  "prediction_match_rate": 1.0,
+  "max_abs_logit_difference": 6.67572021484375e-06,
+  "mean_abs_logit_difference": 7.315025711432099e-07,
+  "num_prediction_mismatches": 0,
+  "mismatch_examples": [],
+  "tvm_artifacts": {
+    "library_path": "artifacts/tvm/lenet_mnist.tar",
+    "graph_path": "artifacts/tvm/lenet_mnist_graph.json",
+    "params_path": "artifacts/tvm/lenet_mnist_params.bin",
+    "relay_text_path": "artifacts/tvm/lenet_mnist_relay.txt"
+  },
+  "performance": {
+    "timing_num_samples": 200,
+    "timing_num_warmup_runs": 10,
+    "onnx_runtime": {
+      "num_runs": 200,
+      "num_samples": 200,
+      "mean_latency_ms": 0.04790483042597771,
+      "median_latency_ms": 0.04324875771999359,
+      "p95_latency_ms": 0.05045263096690177,
+      "throughput_samples_per_sec": 20874.72163261688
+    },
+    "tvm": {
+      "num_runs": 200,
+      "num_samples": 200,
+      "mean_latency_ms": 2.3487306013703346,
+      "median_latency_ms": 0.1789173111319542,
+      "p95_latency_ms": 14.023481030017134,
+      "throughput_samples_per_sec": 425.7618985406686
+    }
+  }
+}

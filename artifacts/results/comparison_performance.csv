@@ -1,0 +1,3 @@
+Backend,Mean latency (ms),Median latency (ms),P95 latency (ms),Throughput (samples/s)
+ONNX,0.048,0.043,0.05,20874.7
+TVM,2.349,0.179,14.023,425.8

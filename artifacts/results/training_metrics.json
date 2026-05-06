@@ -1,0 +1,33 @@
+{
+  "seed": 42,
+  "epochs": 3,
+  "learning_rate": 0.001,
+  "best_test_accuracy": 0.9852,
+  "checkpoint_path": "artifacts/checkpoints/lenet_mnist.pt",
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.26685930700798827,
+      "test_accuracy": 0.9745
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.07863620364740491,
+      "test_accuracy": 0.982
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.0558752712065354,
+      "test_accuracy": 0.9852
+    }
+  ],
+  "onnx_verification": {
+    "num_samples": 10000,
+    "pytorch_accuracy": 0.9852,
+    "onnx_accuracy": 0.9852,
+    "prediction_match_rate": 1.0,
+    "max_abs_logit_difference": 1.049041748046875e-05,
+    "num_prediction_mismatches": 0,
+    "mismatch_examples": []
+  }
+}

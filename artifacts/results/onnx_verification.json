@@ -1,0 +1,9 @@
+{
+  "num_samples": 10000,
+  "pytorch_accuracy": 0.9852,
+  "onnx_accuracy": 0.9852,
+  "prediction_match_rate": 1.0,
+  "max_abs_logit_difference": 7.62939453125e-06,
+  "num_prediction_mismatches": 0,
+  "mismatch_examples": []
+}

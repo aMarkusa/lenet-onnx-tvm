@@ -1,0 +1,3 @@
+Representation,Size (KB)
+ONNX (.onnx + external data),261.29
+TVM (lib + graph + params + relay),497.11

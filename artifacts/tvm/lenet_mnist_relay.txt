@@ -1,0 +1,25 @@
+#[version = "0.0.5"]
+def @main(%input: Tensor[(1, 1, 28, 28), float32] /* ty=Tensor[(1, 1, 28, 28), float32] span=node_Shape_0.input:0:0 */) -> Tensor[(1, 10), float32] {
+  %0 = nn.conv2d(%input, meta[relay.Constant][0] /* ty=Tensor[(6, 1, 5, 5), float32] span=node_conv2d.features.0.weight:0:0 */, padding=[2, 2, 2, 2], channels=6, kernel_size=[5, 5]) /* ty=Tensor[(1, 6, 28, 28), float32] span=node_conv2d:0:0 */;
+  %1 = nn.bias_add(%0, meta[relay.Constant][1] /* ty=Tensor[(6), float32] span=node_conv2d.features.0.bias:0:0 */) /* ty=Tensor[(1, 6, 28, 28), float32] span=node_conv2d:0:0 */;
+  %2 = nn.relu(%1) /* ty=Tensor[(1, 6, 28, 28), float32] span=node_relu:0:0 */;
+  %3 = nn.avg_pool2d(%2, pool_size=[2, 2], strides=[2, 2], padding=[0, 0, 0, 0], count_include_pad=True) /* ty=Tensor[(1, 6, 14, 14), float32] span=node_avg_pool2d:0:0 */;
+  %4 = nn.conv2d(%3, meta[relay.Constant][2] /* ty=Tensor[(16, 6, 5, 5), float32] span=node_conv2d_1.features.3.weight:0:0 */, padding=[0, 0, 0, 0], channels=16, kernel_size=[5, 5]) /* ty=Tensor[(1, 16, 10, 10), float32] span=node_conv2d_1:0:0 */;
+  %5 = nn.bias_add(%4, meta[relay.Constant][3] /* ty=Tensor[(16), float32] span=node_conv2d_1.features.3.bias:0:0 */) /* ty=Tensor[(1, 16, 10, 10), float32] span=node_conv2d_1:0:0 */;
+  %6 = nn.relu(%5) /* ty=Tensor[(1, 16, 10, 10), float32] span=node_relu_1:0:0 */;
+  %7 = nn.avg_pool2d(%6, pool_size=[2, 2], strides=[2, 2], padding=[0, 0, 0, 0], count_include_pad=True) /* ty=Tensor[(1, 16, 5, 5), float32] span=node_avg_pool2d_1:0:0 */;
+  %8 = reshape(%7, newshape=[1, 400], allowzero=True) /* ty=Tensor[(1, 400), float32] span=node_view:0:0 */;
+  %9 = nn.dense(%8, meta[relay.Constant][4] /* ty=Tensor[(120, 400), float32] span=node_linear.classifier.1.weight:0:0 */, units=120) /* ty=Tensor[(1, 120), float32] span=node_linear:0:0 */;
+  %10 = add(%9, meta[relay.Constant][5] /* ty=Tensor[(120), float32] span=node_linear.classifier.1.bias:0:0 */) /* ty=Tensor[(1, 120), float32] span=node_linear:0:0 */;
+  %11 = nn.relu(%10) /* ty=Tensor[(1, 120), float32] span=node_relu_2:0:0 */;
+  %12 = nn.dense(%11, meta[relay.Constant][6] /* ty=Tensor[(84, 120), float32] span=node_linear_1.classifier.3.weight:0:0 */, units=84) /* ty=Tensor[(1, 84), float32] span=node_linear_1:0:0 */;
+  %13 = add(%12, meta[relay.Constant][7] /* ty=Tensor[(84), float32] span=node_linear_1.classifier.3.bias:0:0 */) /* ty=Tensor[(1, 84), float32] span=node_linear_1:0:0 */;
+  %14 = nn.relu(%13) /* ty=Tensor[(1, 84), float32] span=node_relu_3:0:0 */;
+  %15 = nn.dense(%14, meta[relay.Constant][8] /* ty=Tensor[(10, 84), float32] span=node_linear_2.classifier.5.weight:0:0 */, units=10) /* ty=Tensor[(1, 10), float32] span=node_linear_2:0:0 */;
+  add(%15, meta[relay.Constant][9] /* ty=Tensor[(10), float32] span=node_linear_2.classifier.5.bias:0:0 */) /* ty=Tensor[(1, 10), float32] span=node_linear_2:0:0 */
+}
+
+/* For debugging purposes the metadata section has been omitted.
+ * If you would like to see the full metadata section you can set the 
+ * option to `True` when invoking `astext`. 
+ */

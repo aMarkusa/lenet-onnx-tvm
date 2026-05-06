@@ -1,0 +1,12 @@
+torch>=2.3
+torchvision>=0.18
+onnx>=1.16,<1.19
+onnxruntime>=1.18
+onnxscript>=0.1
+apache-tvm
+numpy>=1.26,<2
+pandas>=2.0
+matplotlib>=3.8
+tqdm>=4.66
+jupyterlab>=4.2
+ipykernel>=6.29

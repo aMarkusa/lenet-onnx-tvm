@@ -1,0 +1,9 @@
+- Accuracy is unchanged: ONNX = 0.9852, TVM = 0.9852 on 10000 test samples; prediction match rate = 1.0000 (0 mismatches).
+- Logit outputs are numerically equivalent: max abs diff = 6.68e-06, mean abs diff = 7.32e-07.
+- Serialized size grew with TVM: ONNX = 261.3 KB, TVM total artifacts = 497.1 KB (1.9x larger). The TVM total includes the compiled kernel library (244.7 KB) in addition to graph JSON, params, and Relay text.
+- Latency at batch size 1 is higher with TVM: mean = 2.349 ms vs 0.048 ms (49.0x), median = 0.179 ms vs 0.043 ms (4.1x).
+- Throughput follows the same direction: ONNX = 20874.7 samples/s, TVM = 425.8 samples/s.
+- Graph node count did not shrink after compilation: ONNX has 14 graph nodes, the imported Relay program has 17 call nodes, and the compiled TVM graph has 20 executor nodes.
+- ONNX operator mix: AveragePool=2, Concat=1, Conv=2, Gemm=3, Relu=4, Reshape=1, Shape=1.
+- TVM compile time (opt_level=3, target=llvm): 1.69 s.
+- For this small CNN at batch size 1, TVM did not produce a smaller model or lower latency than ONNX Runtime.

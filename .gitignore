@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.ipynb_checkpoints/
+
+# Memoize cache
+.pkl_memoize_py3/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+
+# LaTeX build droppings
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+*.nav
+*.snm
+*.vrb
+main.pdf
+
+# Datasets (downloaded by torchvision at runtime)
+artifacts/data/
+
+# TVM compiled binaries (platform-specific, regenerable)
+artifacts/tvm/*.so
+artifacts/tvm/*.tar
+artifacts/tvm/*.tar.so
+
+# Misc
+project.zip
+.codex

@@ -1,0 +1,4 @@
+Metric,Value
+ONNX accuracy,0.9852
+TVM accuracy,0.9852
+Prediction match rate,1.0

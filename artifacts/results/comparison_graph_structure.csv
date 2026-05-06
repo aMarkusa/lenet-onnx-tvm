@@ -1,0 +1,7 @@
+Metric,Value
+ONNX graph nodes,14
+ONNX op-type counts,"AveragePool=2, Concat=1, Conv=2, Gemm=3, Relu=4, Reshape=1, Shape=1"
+Relay calls (post import),17
+Relay text lines,25
+TVM compiled graph nodes,20
+TVM graph arg nodes,11
