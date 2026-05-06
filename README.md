@@ -4,15 +4,18 @@ This is the code and artifacts for my special project, *Evaluating Model
 Compilation for TinyML: A Case Study Using ONNX and TVM*. The report itself
 is `main.tex`.
 
-The short version: I trained a small LeNet-style CNN on MNIST in PyTorch,
+I trained a small LeNet-style CNN on MNIST in PyTorch,
 exported it to ONNX, then compiled the ONNX model with Apache TVM for a CPU
 target (`llvm`). I then compared ONNX Runtime and TVM on accuracy, model
-size, graph structure, and latency. Spoiler: TVM matched the accuracy
-(good), but on this tiny network with a generic CPU target and no
-autotuning, it was neither smaller nor faster than ONNX Runtime. The
+size, graph structure, and latency. TVM matched the accuracy , but on this tiny network with a generic CPU target and no autotuning, it was neither smaller nor faster than ONNX Runtime. The
 project is mostly about *why* that happens, not about chasing a speedup.
 
-## What's in here
+## A note on AI assistance
+
+AI tools were used to help with parts of this project. All experiments
+were run on my own machine and the results are my own.
+
+## Repository content
 
 ```
 train_lenet_mnist.ipynb     train, evaluate, export to ONNX, sanity-check ONNX vs PyTorch
@@ -118,7 +121,7 @@ the qualitative picture should hold.
 
 ## Notes / known limitations
 
-- All benchmarks are single-threaded at batch size 1 (one image at a
+- All benchmarks are at batch size 1 (one image at a
   time), and TVM was not autotuned for this specific CPU. With tuning
   or larger batches the TVM and INT8 numbers would likely improve, but
   that's left as future work in the report.
