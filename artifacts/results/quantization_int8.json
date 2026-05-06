@@ -1,59 +1,55 @@
 {
-  "input_name": "input",
-  "calibration_samples": 200,
-  "timing_num_samples": 200,
-  "timing_num_warmup_runs": 10,
-  "batch_size_eval": 1,
+  "batch_size": 1,
+  "n_calibration": 200,
+  "n_timing_samples": 200,
+  "n_warmup": 10,
   "variants": {
     "fp32_baseline": {
       "model_path": "artifacts/onnx/lenet_mnist_fp32_quantready.onnx",
       "file_bytes": 249343,
-      "num_test_samples": 10000,
       "accuracy": 0.9852,
+      "n_test": 10000,
       "performance": {
         "num_runs": 200,
-        "num_samples": 200,
-        "mean_latency_ms": 0.03134699538350105,
-        "median_latency_ms": 0.030842609703540802,
-        "p95_latency_ms": 0.034474860876798616,
-        "throughput_samples_per_sec": 31900.984058150996
+        "mean_latency_ms": 0.03146369941532612,
+        "median_latency_ms": 0.031162984669208527,
+        "p95_latency_ms": 0.0342065468430519,
+        "throughput_samples_per_sec": 31782.65806572304
       }
     },
     "int8_dynamic": {
       "model_path": "artifacts/onnx/lenet_mnist_int8_dynamic.onnx",
       "file_bytes": 72103,
-      "num_test_samples": 10000,
       "accuracy": 0.9855,
+      "n_test": 10000,
       "performance": {
         "num_runs": 200,
-        "num_samples": 200,
-        "mean_latency_ms": 0.06916403770446777,
-        "median_latency_ms": 0.06845593452453613,
-        "p95_latency_ms": 0.07393443956971167,
-        "throughput_samples_per_sec": 14458.380875230529
+        "mean_latency_ms": 0.06947511807084084,
+        "median_latency_ms": 0.06843823939561844,
+        "p95_latency_ms": 0.07503097876906391,
+        "throughput_samples_per_sec": 14393.642325016885
       }
     },
     "int8_static": {
       "model_path": "artifacts/onnx/lenet_mnist_int8_static.onnx",
       "file_bytes": 70369,
-      "num_test_samples": 10000,
       "accuracy": 0.9851,
+      "n_test": 10000,
       "performance": {
         "num_runs": 200,
-        "num_samples": 200,
-        "mean_latency_ms": 0.06344874389469624,
-        "median_latency_ms": 0.06347987800836563,
-        "p95_latency_ms": 0.06510475650429726,
-        "throughput_samples_per_sec": 15760.7533044258
+        "mean_latency_ms": 0.05078219808638096,
+        "median_latency_ms": 0.05039479583501816,
+        "p95_latency_ms": 0.053256098181009286,
+        "throughput_samples_per_sec": 19691.940043615115
       }
     }
   },
   "summary": {
-    "fp32_to_dynamic_size_ratio": 3.458150146318461,
-    "fp32_to_static_size_ratio": 3.5433642655146445,
-    "fp32_to_dynamic_mean_speedup": 0.45322679854875125,
-    "fp32_to_static_mean_speedup": 0.49405226107433453,
-    "accuracy_drop_dynamic": -0.000300000000000078,
-    "accuracy_drop_static": 9.999999999998899e-05
+    "size_ratio_dynamic": 3.458150146318461,
+    "size_ratio_static": 3.5433642655146445,
+    "speedup_dynamic": 0.452877235606047,
+    "speedup_static": 0.6195812824369298,
+    "acc_drop_dynamic": -0.000300000000000078,
+    "acc_drop_static": 9.999999999998899e-05
   }
 }

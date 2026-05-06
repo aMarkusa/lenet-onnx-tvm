@@ -20,7 +20,7 @@
 \maketitle
 
 \begin{abstract}
-This work investigates how model compilation affects a small neural network intended for resource-constrained deployment. A LeNet-style convolutional neural network is trained on MNIST, exported to ONNX, and compiled using Apache TVM for CPU execution. The ONNX and TVM versions are compared in terms of accuracy, model size, graph structure, and inference performance. The results show that TVM preserves the model output, but does not make the model smaller or faster in this setup. The TVM artifacts are larger because they include a compiled kernel library, and the CPU performance is worse than ONNX Runtime without hardware-specific tuning. The main finding is that compilation changes the representation of the model, but additional techniques such as quantization or target-specific tuning are needed to improve size or speed.
+This work investigates how model compilation and quantization affect a small neural network intended for resource-constrained deployment. A LeNet-style convolutional neural network is trained on MNIST, exported to ONNX, and compiled using Apache TVM for CPU execution. The ONNX and TVM versions are compared in terms of accuracy, model size, graph structure, and inference performance. Additionally, INT8 quantization (dynamic and static) is applied to the ONNX model. The results show that TVM preserves the model output but does not make it smaller or faster in this setup, and that INT8 quantization reduces model size by approximately $3.5\times$ with no accuracy loss but also does not improve latency at batch size 1. The main finding is that both compilation and quantization change the representation of the model, but on a workload this small the per-inference overhead prevents latency improvement without further steps such as hardware-specific tuning or deployment on a target without native floating-point support.
 \end{abstract}
 
 \thispagestyle{empty}
@@ -30,7 +30,7 @@ Machine learning is increasingly being deployed on resource-constrained edge dev
 
 To bridge the gap between training and deployment, models are typically transformed using compilation frameworks. These frameworks convert high-level model representations into optimized forms suitable for execution on target platforms. However, the effects of this transformation process are often not well understood, particularly in terms of how model structure, compute requirements, and memory usage are altered.
 
-This project investigates the impact of model compilation on small neural networks intended for edge deployment. A baseline model is represented using Open Neural Network Exchange (ONNX) \cite{onnx}, and the Apache TVM \cite{chen2018tvm} compiler is used to generate a compiled version. The study compares the model before and after compilation in 32-bit floating-point (FP32) form, focusing on changes in model size, operator structure, and inference performance. Lower-precision (INT8) variants are out of scope and are discussed only as a direction for future work.
+This project investigates the impact of model compilation on small neural networks intended for edge deployment. A baseline model is represented using Open Neural Network Exchange (ONNX) \cite{onnx}, and the Apache TVM \cite{chen2018tvm} compiler is used to generate a compiled version. The study compares the model before and after compilation in 32-bit floating-point (FP32) form, focusing on changes in model size, operator structure, and inference performance. A preliminary INT8 quantization experiment is also included to test whether reduced precision improves the size or latency situation.
 
 The main contribution of this work is a structured analysis of how compilation transforms neural network models at the graph level and how these transformations affect their suitability for deployment in resource-constrained environments. The results provide insight into the role of compilation in bridging the gap between trained models and deployable systems.
 
@@ -50,7 +50,7 @@ Quantization is a technique used to reduce the computational and memory requirem
 
 This reduction in precision decreases model size and can improve computational efficiency, as integer operations are typically faster and require less memory than floating-point operations. As a result, quantization is commonly used in deployment scenarios where resources are limited.
 
-However, quantization may introduce approximation errors, which can affect model accuracy. Quantization is included here as background because it is one of the standard techniques for reducing model size on resource-constrained targets; it is not part of the experimental pipeline in this project, but is discussed as future work.
+However, quantization may introduce approximation errors, which can affect model accuracy. In this project, INT8 quantization is applied as a supplementary experiment to test whether reduced precision improves model size or latency beyond what compilation alone provides.
 
 \subsection{ONNX}
 ONNX is an open standard for representing machine learning models in a framework-independent format. It enables interoperability between different deep learning frameworks by providing a common representation that can be shared across tools and platforms \cite{onnx}.
@@ -105,7 +105,7 @@ In addition, a simple accuracy evaluation is performed to verify that compilatio
 
 \subsection{Comparison Setup}
 
-The ONNX model is used as the baseline representation, while the TVM-compiled model represents the optimized version. The model is studied in its FP32 form only; INT8 quantization would require a separate calibration step and is left as future work. The comparison focuses on identifying differences in model structure and computational characteristics between the two representations.
+The ONNX model is used as the baseline representation, while the TVM-compiled model represents the optimized version. The primary comparison is in FP32 form. A supplementary INT8 quantization step (dynamic and static, using ONNX Runtime's quantization toolkit) is included to test whether reduced precision changes the size and latency picture. The comparison focuses on identifying differences in model structure and computational characteristics between the two representations.
 
 All experiments are conducted on a CPU-based environment, and the results are interpreted qualitatively rather than as hardware-specific performance measurements.
 
@@ -286,6 +286,27 @@ TVM is slower on every statistic. At the median the gap is about $4.2\times$, bu
 \label{fig:latency}
 \end{figure}
 
+\subsection{INT8 Quantization}
+
+As a preliminary test of whether quantization improves on the FP32 baseline, the ONNX model was quantized to INT8 using ONNX Runtime's built-in quantization toolkit. Two variants were produced: a dynamic-quantized model (weights quantized offline, activations quantized at runtime) and a statically-quantized model (both weights and activations quantized using 200 calibration samples from the MNIST training set). The static variant uses per-channel weight quantization with unsigned 8-bit activations and signed 8-bit weights, emitting dedicated integer operators (\texttt{QLinearConv}, \texttt{QGemm}) rather than float operators wrapped in quantize/dequantize nodes. Results are summarized in Table~\ref{tab:int8}.
+
+\begin{table}[H]
+\centering
+\caption{INT8 quantization results compared to the FP32 baseline (ONNX Runtime, batch size 1, 200 timed runs after 10 warm-up runs). Size ratio is FP32 divided by INT8.}
+\label{tab:int8}
+\begin{tabular}{lccc}
+\hline
+Variant & File size (bytes) & Accuracy & Mean latency (ms) \\
+\hline
+FP32 baseline & 249{,}343 & 0.9852 & 0.031 \\
+INT8 dynamic & 72{,}103 & 0.9855 & 0.069 \\
+INT8 static & 70{,}369 & 0.9851 & 0.051 \\
+\hline
+\end{tabular}
+\end{table}
+
+Quantization reduces model size by approximately $3.5\times$ (from 244~KB to around 69--70~KB) with no meaningful accuracy loss (within $\pm 0.03$ percentage points of FP32). However, neither INT8 variant is faster than the FP32 baseline at batch size 1. Dynamic quantization is roughly $2.2\times$ slower and static roughly $1.6\times$ slower. The reasons for this are discussed in Section~5.
+
 \section{Discussion}
 
 Read together, the results say something fairly simple. TVM kept the model's behaviour intact (same predictions, same logits up to FP32 noise), but at this scale and on this hardware the compiled model was neither smaller nor faster than the ONNX baseline. The rest of this section is about why that happened, and what it does and does not say about model compilation as a deployment strategy.
@@ -314,19 +335,27 @@ In other words, the node counts in Table~\ref{tab:graph-structure} are a propert
 
 Taken together, the size, structure and performance results indicate that TVM changed the form of the artifact rather than what the artifact does. Inputs and outputs match to within FP32 round-off (max absolute logit difference $6.68 \times 10^{-6}$, zero prediction mismatches in 10{,}000 samples), the parameter blob is the same up to serialization, and the operator semantics are unchanged by construction. The main new part of the TVM output is the compiled kernel library: the artifact is no longer an exchange description that some other runtime needs to interpret, but an executable bundle that the TVM runtime can run directly. This is the deployment-relevant change. The size, structure and latency numbers in the Results section can be understood as side effects of that change of form, rather than as the main result.
 
-\subsection{Implications for stronger deployment gains}
+\subsection{Why INT8 quantization did not improve latency}
 
-The TinyML scenarios that motivate this kind of pipeline --- microcontrollers, low-bandwidth OTA updates, tight power envelopes --- usually need much more than a change of artifact form. Turning the workflow studied here into something that would actually pay off on a real edge device would require at least two further steps.
+The INT8 results in Table~\ref{tab:int8} mirror the TVM result: a real transformation was applied, the model genuinely uses integer arithmetic (the static variant's graph contains \texttt{QLinearConv} and \texttt{QGemm} rather than float operators), and yet inference is slower than FP32 at batch size 1. The reason is similar to why TVM was slower: per-inference overhead dominates when the workload itself is microsecond-scale.
 
-The first is quantization, for instance to INT8. Table~\ref{tab:size} already shows that the parameter blob is the dominant contributor to size on both sides, and quantization is the transformation that goes after exactly that, with the additional benefit of cheaper inference on hardware with good integer support. The second is hardware-specific tuning, either by autotuning the TVM kernels (AutoTVM, Ansor) for the actual deployment target, or by cross-compiling to that target instead of using the generic \texttt{llvm} CPU target used here.
+Specifically, INT8 introduces quantize and dequantize steps at the input and output of each layer. For a large model the cost of these steps is amortized over the cheaper integer matmul, but for LeNet at batch size 1 the integer arithmetic is only a few microseconds and the bookkeeping (scale multiplies, zero-point adjustments, rounding, clamping) takes longer than the time saved by replacing FP32 SIMD with INT8 SIMD. Dynamic quantization is worse because it also computes per-tensor activation scales at runtime on every call.
 
-Without at least one of those, an out-of-the-box ONNX-to-TVM pipeline preserves correctness and changes the form of the artifact, but does not in itself make the model smaller or faster.
+The size reduction, however, is clear and robust: weights shrink by roughly $3.5\times$ with essentially no accuracy cost. On a memory-constrained target where model size (not latency on a laptop) is the binding constraint, this is the relevant win. On hardware without a floating-point unit, INT8 would also become a latency win by default because the FP32 alternative is software-emulated.
+
+\subsection{Implications for deployment}
+
+The TinyML scenarios that motivate this kind of pipeline --- microcontrollers, low-bandwidth OTA updates, tight power envelopes --- usually need much more than a change of artifact form. The INT8 results confirm that quantization delivers on model size but, at this scale, does not provide a latency benefit on a general-purpose CPU. For latency improvement, additional steps are needed: hardware-specific tuning (AutoTVM, Ansor \cite{zheng2020ansor}) for the actual deployment target, larger batch sizes where the integer arithmetic dominates over per-call overhead, or a target where integer arithmetic is natively faster than floating-point.
+
+The practical implication is that compilation and quantization are both necessary components of a deployment pipeline, but neither alone is sufficient to improve all metrics simultaneously on a small workload at batch size 1.
 
 \section{Conclusion}
 
 This project compared an ONNX baseline against a TVM-compiled version of the same LeNet-style CNN on MNIST, focusing on accuracy, model size, graph structure, and inference latency on a CPU host. The compiled model preserves predictions and logits to within FP32 round-off, but in this configuration it is not smaller or faster than the ONNX baseline executed with ONNX Runtime: the TVM artifacts are roughly $1.9\times$ larger because they include a compiled kernel library, and inference latency at batch size 1 is higher with default schedules and no autotuning.
 
-The practical takeaway is that an out-of-the-box ONNX-to-TVM pipeline is best understood as a change of representation rather than as an automatic optimization. Reducing model size or inference latency for real edge deployment would require additional steps beyond compilation: quantization (for example to INT8) to operate directly on the parameter payload, and either autotuning or cross-compilation to a specific embedded target instead of the generic \texttt{llvm} CPU target used here. Both are natural directions for future work, but were out of scope for this project.
+A supplementary INT8 quantization experiment confirmed that quantization delivers a clear size reduction (${\sim}3.5\times$ smaller) with no meaningful accuracy loss, but also does not improve CPU latency at batch size 1 --- the per-inference overhead of quantize/dequantize steps exceeds the savings from integer arithmetic on a workload this small.
+
+The practical takeaway is that both compilation and quantization are best understood as structural transformations rather than automatic speedups when applied to a tiny model at batch size 1 on a general-purpose CPU. The size benefit of quantization is real and deployment-relevant (especially for memory-constrained targets and OTA updates), but latency improvement requires further steps: hardware-specific autotuning, larger batch sizes, or a target where integer arithmetic has a native advantage over floating-point.
 
 \newpage
 \printbibliography
