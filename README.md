@@ -68,16 +68,16 @@ python analyze_results.py
 This writes the CSVs and the `summary.txt` under `artifacts/results/`,
 and the bar charts under `artifacts/figures/`.
 
-For the INT8 experiment (separate from the TVM pipeline):
+For the INT8 quantization experiment (separate from the TVM pipeline):
 
 ```bash
 python quantize_int8_eval.py
 ```
 
-This re-exports the checkpoint via the legacy ONNX exporter (the
-dynamo-exported one confuses the ORT quantizer), quantizes it both
-dynamically and statically, evaluates all three variants, and writes
-`artifacts/results/quantization_int8.json`.
+This takes the trained model, converts it to reduced-precision (INT8)
+variants, measures accuracy and speed for each, and saves the results
+to `artifacts/results/quantization_int8.json`. It runs in under 10
+seconds.
 
 To build the report you'll need `main.tex` and `sample.bib` (the
 bibliography file) in the same directory:
@@ -95,31 +95,43 @@ The exact numbers from my run, copied from `artifacts/results/summary.txt`:
 
 - ONNX accuracy = TVM accuracy = 0.9852 on the 10 000 MNIST test images,
   prediction match rate 1.0, max absolute logit diff ~6.7e-06.
-- ONNX file: 261 KB. TVM artifacts total: 497 KB (the bulk of the extra
-  is the compiled kernel `.so`/`.tar.so`).
-- ONNX mean latency at batch 1: ~0.048 ms. TVM mean latency at batch 1:
-  ~2.35 ms. ONNX Runtime is substantially faster here.
-- Graph node counts: ONNX = 14, Relay calls after import = 17, compiled
-  TVM graph = 20.
+- ONNX model file: 261 KB. TVM output: 497 KB total (bigger because it
+  includes a compiled library that ONNX doesn't need).
+- ONNX mean latency at batch 1: ~0.048 ms. TVM mean latency: ~2.35 ms.
+  ONNX Runtime is substantially faster here because it already has
+  hand-tuned kernels for this CPU, and TVM was run without any tuning.
+- Graph node counts: ONNX = 14, Relay (TVM's intermediate form) = 17,
+  final compiled TVM graph = 20. More nodes doesn't mean more work; the
+  report explains where the extra ones come from.
 
-INT8 quantization results (from `quantize_int8_eval.py`):
+INT8 quantization results (from `quantize_int8_eval.py`). The idea here
+is to shrink the model by storing weights (and optionally activations) as
+8-bit integers instead of 32-bit floats:
 
-- FP32 baseline: 244 KB, acc 0.9852, latency ~0.031 ms.
-- INT8 dynamic (weights only): 70 KB (~3.5x smaller), acc 0.9855, latency ~0.069 ms.
-- INT8 static (QOperator, u8/s8, 200 calib samples): 69 KB (~3.5x smaller),
-  acc 0.9851, latency ~0.051 ms.
-- Size drops a lot, latency doesn't improve at batch 1. Same story as
-  TVM: the workload is too small for the optimization to pay off.
+- FP32 baseline: 244 KB, accuracy 0.9852, latency ~0.031 ms.
+- INT8 dynamic: 70 KB (~3.5x smaller), accuracy 0.9855, latency ~0.069 ms.
+  "Dynamic" means the weights are stored as int8 ahead of time, but
+  activations are quantized on the fly at each inference call.
+- INT8 static: 69 KB (~3.5x smaller), accuracy 0.9851, latency ~0.051 ms.
+  "Static" means both weights and activations use pre-computed int8
+  scales, decided by running 200 training images through the model
+  as calibration beforehand.
+- The model gets ~3.5x smaller with no accuracy loss. But neither
+  variant is actually faster than FP32 at batch size 1. The network is
+  so small that the overhead of converting values between int8 and float
+  at layer boundaries costs more time than the cheaper integer math
+  saves. Same story as the TVM result: the workload is too tiny for the
+  optimization to pay off on this hardware.
 
 Your absolute timings will differ depending on CPU, but
 the qualitative picture should hold.
 
 ## Notes / known limitations
 
-- Single-threaded, batch size 1, no autotuning. With AutoTVM/MetaSchedule
-  or a more aggressive target (e.g. `llvm -mcpu=...`) the TVM number
-  would change, possibly a lot. That's flagged as future work in the
-  report.
+- All benchmarks are single-threaded at batch size 1 (one image at a
+  time), and TVM was not autotuned for this specific CPU. With tuning
+  or larger batches the TVM and INT8 numbers would likely improve, but
+  that's left as future work in the report.
 - The Netron screenshot at `artifacts/figures/onnx_graph.png` is a
   placeholder. The report references it, but if you regenerate it from
   scratch, open the ONNX file in Netron and re-export.
