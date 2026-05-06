@@ -42,6 +42,10 @@ artifacts/tvm/*.so
 artifacts/tvm/*.tar
 artifacts/tvm/*.tar.so
 
+# ONNX RT quantizer temp files
+sym_shape_infer_temp.onnx
+*-*-*-*-*.data
+
 # Misc
 project.zip
 .codex
